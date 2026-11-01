@@ -204,4 +204,144 @@ public class UserTest {
                 )
         );
     }
+
+    @Test
+    void shouldCreditCommonUserBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        user.credit(new BigDecimal("2.25"));
+
+        assertEquals(new BigDecimal("12.75"), user.getBalance());
+    }
+
+    @Test
+    void shouldCreditMerchantBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.MERCHANT,
+                new BigDecimal("0.00")
+        );
+
+        user.credit(new BigDecimal("0.01"));
+
+        assertEquals(new BigDecimal("0.01"), user.getBalance());
+    }
+
+    @Test
+    void shouldNormalizeCreditAmount() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.MERCHANT,
+                new BigDecimal("10.50")
+        );
+
+        user.credit(new BigDecimal("2"));
+
+        assertEquals(new BigDecimal("12.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectNullCreditWithoutChangingBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> user.credit(null)
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectZeroCreditWithoutChangingBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> user.credit(BigDecimal.ZERO)
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectNegativeCreditWithoutChangingBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> user.credit(new  BigDecimal("-5"))
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectCreditthatRequiresRoundingWithoutChangingBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> user.credit(new  BigDecimal("5.001"))
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldCreditAmountWithTrailingZeros() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        user.credit(new  BigDecimal("5.250"));
+
+        assertEquals(new BigDecimal("15.75"), user.getBalance());
+    }
 }

@@ -45,7 +45,7 @@ public class User {
         try {
             this.balance = balance.setScale(2, RoundingMode.UNNECESSARY);
         } catch (ArithmeticException ex) {
-            throw new IllegalArgumentException("Balance must be  representable in cents.", ex);
+            throw new IllegalArgumentException("Balance must be representable in cents.", ex);
         }
 
         this.fullName = fullName;
@@ -53,6 +53,24 @@ public class User {
         this.email = email;
         this.passwordHash = passwordHash;
         this.userType = userType;
+    }
+
+    public void credit(BigDecimal amount) {
+        BigDecimal validatedAmount;
+
+        if (amount == null) {
+            throw new IllegalArgumentException("Amount cannot be null.");
+        }
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be positive.");
+        }
+        try {
+            validatedAmount = amount.setScale(2, RoundingMode.UNNECESSARY);
+        } catch (ArithmeticException ex) {
+            throw new IllegalArgumentException("Amount must be representable in cents.", ex);
+        }
+
+        this.balance = this.balance.add(validatedAmount);
     }
 
     public String getFullName() {
@@ -79,4 +97,5 @@ public class User {
 
         return balance;
     }
+
 }
