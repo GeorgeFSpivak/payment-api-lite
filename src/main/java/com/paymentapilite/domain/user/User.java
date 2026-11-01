@@ -1,6 +1,9 @@
 package com.paymentapilite.domain.user;
 
 
+import com.paymentapilite.exceptions.DebitNotAllowedException;
+import com.paymentapilite.exceptions.InsufficientBalanceException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -71,6 +74,30 @@ public class User {
         }
 
         this.balance = this.balance.add(validatedAmount);
+    }
+
+    public void debit(BigDecimal amount) {
+        BigDecimal validatedAmount;
+
+        if (amount == null) {
+            throw new IllegalArgumentException("Amount cannot be null.");
+        }
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be positive.");
+        }
+        try {
+            validatedAmount = amount.setScale(2, RoundingMode.UNNECESSARY);
+        } catch (ArithmeticException ex) {
+            throw new IllegalArgumentException("Amount must be representable in cents.", ex);
+        }
+        if (userType == UserType.MERCHANT) {
+            throw new DebitNotAllowedException();
+        }
+        if (balance.compareTo(validatedAmount) < 0) {
+            throw new InsufficientBalanceException();
+        }
+
+        this.balance = this.balance.subtract(validatedAmount);
     }
 
     public String getFullName() {
