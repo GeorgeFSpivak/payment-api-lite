@@ -1,6 +1,8 @@
 package com.paymentapilite.domain.user;
 
 
+import com.paymentapilite.exceptions.DebitNotAllowedException;
+import com.paymentapilite.exceptions.InsufficientBalanceException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -343,5 +345,75 @@ public class UserTest {
         user.credit(new  BigDecimal("5.250"));
 
         assertEquals(new BigDecimal("15.75"), user.getBalance());
+    }
+
+    @Test
+    void shouldDebitCommonUserBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        user.debit(new BigDecimal("2.25"));
+
+        assertEquals(new BigDecimal("8.25"), user.getBalance());
+    }
+
+    @Test
+    void shouldAllowDebitingEntireBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        user.debit(new BigDecimal("10.50"));
+
+        assertEquals(new BigDecimal("0.00"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectDebitWithInsufficientBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                InsufficientBalanceException.class,
+                () -> user.debit(new BigDecimal("10.51"))
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectDebitForMerchant() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.MERCHANT,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                DebitNotAllowedException.class,
+                () -> user.debit(new BigDecimal("2.25"))
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
     }
 }
