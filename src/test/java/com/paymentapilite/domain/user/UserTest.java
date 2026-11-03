@@ -416,4 +416,128 @@ public class UserTest {
 
         assertEquals(new BigDecimal("10.50"), user.getBalance());
     }
+
+    @Test
+    void shouldRejectNullDebitWithoutChangingBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> user.debit(null)
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectZeroDebitWithoutChangingBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> user.debit(BigDecimal.ZERO)
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectNegativeDebitWithoutChangingBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> user.debit(new  BigDecimal("-5"))
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectDebitThatRequiresRoundingWithoutChangingBalance() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> user.debit(new  BigDecimal("5.251"))
+        );
+
+        assertEquals(new BigDecimal("10.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldDebitWholeNumberAmount() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        user.debit(new  BigDecimal("2"));
+
+        assertEquals(new BigDecimal("8.50"), user.getBalance());
+    }
+
+    @Test
+    void shouldDebitAmountWithTrailingZeros() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        user.debit(new  BigDecimal("2.250"));
+
+        assertEquals(new BigDecimal("8.25"), user.getBalance());
+    }
+
+    @Test
+    void shouldDebitOneCent() {
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        user.debit(new  BigDecimal("0.01"));
+
+        assertEquals(new BigDecimal("10.49"), user.getBalance());
+    }
 }
