@@ -10,8 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UserTest {
 
@@ -539,5 +538,210 @@ public class UserTest {
         user.debit(new  BigDecimal("0.01"));
 
         assertEquals(new BigDecimal("10.49"), user.getBalance());
+    }
+
+    @Test
+    void shouldAcceptFullNameAtMaximumLength() {
+        String fullName = "a".repeat(150);
+
+        User user = new User(
+                fullName,
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertEquals(fullName, user.getFullName());
+    }
+
+    @Test
+    void shouldRejectFullNameExceedingMaximumLength() {
+        String fullName = "a".repeat(151);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new User(
+                        fullName,
+                        "12345678901",
+                        "micheal@example.com",
+                        "hash-test",
+                        UserType.COMMON,
+                        new BigDecimal("10.50")
+                )
+        );
+    }
+
+    @Test
+    void shouldAcceptDocumentAtMaximumLength() {
+        String document = "1".repeat(20);
+
+        User user = new User(
+                "Micheal Spivak",
+                document,
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertEquals(document, user.getDocument());
+    }
+
+    @Test
+    void shouldRejectDocumentExceedingMaximumLength() {
+        String document = "1".repeat(21);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new User(
+                        "Micheal Spivak",
+                        document,
+                        "micheal@example.com",
+                        "hash-test",
+                        UserType.COMMON,
+                        new BigDecimal("10.50")
+                )
+        );
+    }
+
+    @Test
+    void shouldAcceptEmailAtMaximumLength() {
+        String email = "a".repeat(255);
+
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                email,
+                "hash-test",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        assertEquals(email, user.getEmail());
+    }
+
+    @Test
+    void shouldRejectEmailExceedingMaximumLength() {
+        String email = "a".repeat(256);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new User(
+                        "Micheal Spivak",
+                        "12345678901",
+                        email,
+                        "hash-test",
+                        UserType.COMMON,
+                        new BigDecimal("10.50")
+                )
+        );
+    }
+
+    @Test
+    void shouldAcceptPasswordHashAtMaximumLength() {
+        String passwordHash = "a".repeat(255);
+
+        assertDoesNotThrow(
+                () -> new User(
+                        "Micheal Spivak",
+                        "12345678901",
+                        "micheal@example.com",
+                        passwordHash,
+                        UserType.COMMON,
+                        new BigDecimal("10.50")
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectPasswordHashExceedingMaximumLength() {
+        String passwordHash = "a".repeat(256);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new User(
+                        "Micheal Spivak",
+                        "12345678901",
+                        "micheal@example.com",
+                        passwordHash,
+                        UserType.COMMON,
+                        new BigDecimal("10.50")
+                )
+        );
+    }
+
+    @Test
+    void shouldAcceptMaximumInitialBalance() {
+        BigDecimal balance = new BigDecimal("9".repeat(17) + ".99");
+
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                balance
+        );
+
+        assertEquals(balance, user.getBalance());
+    }
+
+    @Test
+    void shouldRejectInitialBalanceExceedingMaximum() {
+        BigDecimal balance = new BigDecimal("1" + "0".repeat(17) + ".00");
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new User(
+                        "Micheal Spivak",
+                        "12345678901",
+                        "micheal@example.com",
+                        "hash-test",
+                        UserType.COMMON,
+                        balance
+                )
+        );
+    }
+
+    @Test
+    void shouldAllowCreditReachingMaximumBalance() {
+        BigDecimal balance = new BigDecimal("9".repeat(17) + ".98");
+
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                balance
+        );
+
+
+        user.credit(new BigDecimal("0.01"));
+
+        assertEquals(new BigDecimal("9".repeat(17) + ".99"), user.getBalance());
+    }
+
+    @Test
+    void shouldRejectCreditExceedingMaximumWithoutChangingBalance() {
+        BigDecimal balance = new BigDecimal("9".repeat(17) + ".99");
+
+        User user = new User(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "hash-test",
+                UserType.COMMON,
+                balance
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> user.credit(new BigDecimal("0.01"))
+        );
+
+        assertEquals(balance, user.getBalance());
     }
 }
