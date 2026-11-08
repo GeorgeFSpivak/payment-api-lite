@@ -5,6 +5,7 @@ import com.paymentapilite.domain.user.User;
 import com.paymentapilite.domain.user.UserRequestDTO;
 import com.paymentapilite.domain.user.UserResponseDTO;
 import com.paymentapilite.domain.user.UserType;
+import com.paymentapilite.exceptions.UserAlreadyExistsException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
@@ -63,5 +64,61 @@ public class UserServiceIntegrationTest {
 
         assertNotEquals(request.password(), storedHash);
         assertTrue(passwordEncoder.matches(request.password(), storedHash));
+    }
+
+    @Test
+    void shouldRejectDuplicateDocument() {
+        UserRequestDTO request = new UserRequestDTO(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "test-password",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        UserRequestDTO duplicateRequest = new UserRequestDTO(
+                "Micheal Spivak",
+                "12345678901",
+                "other@example.com",
+                "test-password",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        service.createUser(request);
+
+        assertThrows(
+                UserAlreadyExistsException.class,
+                () -> service.createUser(duplicateRequest)
+        );
+    }
+
+    @Test
+    void shouldRejectDuplicateEmail() {
+        UserRequestDTO request = new UserRequestDTO(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "test-password",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        UserRequestDTO duplicateRequest = new UserRequestDTO(
+                "Micheal Spivak",
+                "12345678902",
+                "micheal@example.com",
+                "test-password",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        service.createUser(request);
+
+        assertThrows(
+                UserAlreadyExistsException.class,
+                () -> service.createUser(duplicateRequest)
+        );
     }
 }
