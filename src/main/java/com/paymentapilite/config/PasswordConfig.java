@@ -16,7 +16,7 @@ public class PasswordConfig {
         return new Pbkdf2PasswordEncoder(
                 "",
                 16,
-                600_00,
+                600_000,
                 Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256
         );
     }
