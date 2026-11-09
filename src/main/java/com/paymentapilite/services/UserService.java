@@ -5,6 +5,7 @@ import com.paymentapilite.domain.user.User;
 import com.paymentapilite.domain.user.UserRequestDTO;
 import com.paymentapilite.domain.user.UserResponseDTO;
 import com.paymentapilite.exceptions.UserAlreadyExistsException;
+import com.paymentapilite.exceptions.UserNotFoundException;
 import com.paymentapilite.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,18 @@ public class UserService {
                 saved.getFullName(),
                 saved.getUserType(),
                 saved.getBalance()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDTO getUserById(Long id) {
+        User user = repository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+
+        return new UserResponseDTO(
+                user.getId(),
+                user.getFullName(),
+                user.getUserType(),
+                user.getBalance()
         );
     }
 }
