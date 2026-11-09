@@ -6,6 +6,7 @@ import com.paymentapilite.domain.user.UserRequestDTO;
 import com.paymentapilite.domain.user.UserResponseDTO;
 import com.paymentapilite.domain.user.UserType;
 import com.paymentapilite.exceptions.UserAlreadyExistsException;
+import com.paymentapilite.exceptions.UserNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
@@ -119,6 +120,40 @@ public class UserServiceIntegrationTest {
         assertThrows(
                 UserAlreadyExistsException.class,
                 () -> service.createUser(duplicateRequest)
+        );
+    }
+
+    @Test
+    void shouldFindUserById() {
+        UserRequestDTO request = new UserRequestDTO(
+                "Micheal Spivak",
+                "12345678901",
+                "micheal@example.com",
+                "test-password",
+                UserType.COMMON,
+                new BigDecimal("10.50")
+        );
+
+        UserResponseDTO created = service.createUser(request);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        UserResponseDTO found = service.getUserById(created.id());
+
+        assertEquals(created.id(), found.id());
+        assertEquals(created.fullName(), found.fullName());
+        assertEquals(created.userType(), found.userType());
+        assertEquals(created.balance(), found.balance());
+    }
+
+    @Test
+    void shouldRejectUnknownUserId() {
+        Long unknownId = Long.MAX_VALUE;
+
+        assertThrows(
+                UserNotFoundException.class,
+                () -> service.getUserById(unknownId)
         );
     }
 }
