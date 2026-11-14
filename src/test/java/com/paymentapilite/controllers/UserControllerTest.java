@@ -1,4 +1,4 @@
-package com.paymentapilite.domain.user.controllers;
+package com.paymentapilite.controllers;
 
 
 import com.paymentapilite.controllers.UserController;
