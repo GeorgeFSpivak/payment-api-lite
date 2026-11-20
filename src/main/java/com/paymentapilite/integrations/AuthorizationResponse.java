@@ -7,6 +7,6 @@ public record AuthorizationResponse(
         AuthorizationData data
 ) {
 
-    public record AuthorizationData (boolean authorization) {
+    public record AuthorizationData (Boolean authorization) {
     }
 }
